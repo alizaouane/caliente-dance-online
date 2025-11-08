@@ -12,6 +12,8 @@ export const metadata: Metadata = {
   description: 'Premium dance class videos on demand. Learn Salsa, Bachata, Kizomba and more at your own pace.',
 }
 
+export const dynamic = 'force-dynamic'
+
 export default function RootLayout({
   children,
 }: {

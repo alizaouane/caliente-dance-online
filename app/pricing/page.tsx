@@ -4,6 +4,8 @@ import { Check } from 'lucide-react'
 import { STRIPE_PRICE_MONTHLY, STRIPE_PRICE_YEARLY } from '@/lib/stripe'
 import { PricingCard } from '@/components/PricingCard'
 
+export const dynamic = 'force-dynamic'
+
 export default function PricingPage() {
   return (
     <div className="container py-12 md:py-24">

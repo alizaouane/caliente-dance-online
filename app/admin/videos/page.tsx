@@ -83,7 +83,7 @@ export default async function AdminVideosPage() {
                       </div>
                     </div>
                     <div className="flex gap-2 mt-4">
-                      <Link href={`/admin/videos/${video.id}/edit`}>
+                      <Link href={`/admin/videos/edit/${video.id}`}>
                         <Button variant="outline" size="sm">Edit</Button>
                       </Link>
                       <Link href={`/videos/${video.slug}`}>

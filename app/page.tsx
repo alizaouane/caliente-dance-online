@@ -103,7 +103,7 @@ export default function HomePage() {
             <CardHeader>
               <CardTitle>Can I cancel anytime?</CardTitle>
               <CardDescription>
-                Yes, you can cancel your subscription at any time. You'll continue to have access until the end of your billing period.
+                Yes, you can cancel your subscription at any time. You&apos;ll continue to have access until the end of your billing period.
               </CardDescription>
             </CardHeader>
           </Card>
@@ -111,7 +111,7 @@ export default function HomePage() {
             <CardHeader>
               <CardTitle>What happens if I cancel?</CardTitle>
               <CardDescription>
-                You'll lose access to full videos immediately after cancellation, but you can resubscribe anytime to regain access.
+                You&apos;ll lose access to full videos immediately after cancellation, but you can resubscribe anytime to regain access.
               </CardDescription>
             </CardHeader>
           </Card>

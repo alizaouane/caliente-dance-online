@@ -11,11 +11,11 @@ export default async function AdminSubscribersPage() {
     .order('created_at', { ascending: false })
 
   // Get user emails using service role
-  const userIds = subscriptions?.map((s) => s.user_id) || []
+  const userIds = subscriptions?.map((s: any) => s.user_id) || []
   const { data: users } = await supabase.auth.admin.listUsers()
 
-  const subscriptionsWithEmails = subscriptions?.map((sub) => {
-    const user = users?.users.find((u) => u.id === sub.user_id)
+  const subscriptionsWithEmails = subscriptions?.map((sub: any) => {
+    const user = users?.users.find((u: any) => u.id === sub.user_id)
     return {
       ...sub,
       user_email: user?.email || 'Unknown',
@@ -27,7 +27,7 @@ export default async function AdminSubscribersPage() {
       <h1 className="text-3xl font-bold mb-8">Subscribers</h1>
 
       <div className="space-y-4">
-        {subscriptionsWithEmails?.map((subscription) => (
+        {subscriptionsWithEmails?.map((subscription: any) => (
           <Card key={subscription.id}>
             <CardContent className="p-6">
               <div className="flex items-center justify-between">

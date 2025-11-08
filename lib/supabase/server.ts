@@ -14,7 +14,7 @@ export const createServiceClient = () => {
   
   // Import dynamically to avoid bundling in client
   const { createClient } = require('@supabase/supabase-js')
-  return createClient<Database>(supabaseUrl, supabaseServiceKey, {
+  return createClient(supabaseUrl, supabaseServiceKey, {
     auth: {
       autoRefreshToken: false,
       persistSession: false

@@ -1,4 +1,3 @@
-import { redirect } from 'next/navigation'
 import { requireAuth } from '@/lib/rbac'
 import { getCurrentProfile, hasActiveSubscription } from '@/lib/auth'
 import { createServerClient } from '@/lib/supabase/server'
@@ -73,7 +72,7 @@ export default async function AccountPage() {
               ) : (
                 <>
                   <p className="text-muted-foreground mb-4">
-                    You don't have an active subscription. Subscribe to access all videos.
+                    You don&apos;t have an active subscription. Subscribe to access all videos.
                   </p>
                   <Button asChild>
                     <a href="/pricing">View Pricing</a>

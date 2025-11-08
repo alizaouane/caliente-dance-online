@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation'
 import { createServerClient } from '@/lib/supabase/server'
-import { requireAuth, hasActiveSubscription } from '@/lib/auth'
+import { requireAuth } from '@/lib/rbac'
+import { hasActiveSubscription } from '@/lib/auth'
 import { VideoPlayer } from '@/components/VideoPlayer'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'

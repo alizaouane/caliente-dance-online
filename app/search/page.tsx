@@ -55,7 +55,7 @@ export default async function SearchPage({
       {searchParams.q ? (
         <>
           <p className="text-muted-foreground mb-6">
-            {transformedVideos.length} result{transformedVideos.length !== 1 ? 's' : ''} for "{searchParams.q}"
+            {transformedVideos.length} result{transformedVideos.length !== 1 ? 's' : ''} for &quot;{searchParams.q}&quot;
           </p>
           {transformedVideos.length > 0 ? (
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">

@@ -170,7 +170,7 @@ export function VideoForm({ video }: VideoFormProps) {
                       } else {
                         setFormData({
                           ...formData,
-                          selectedStyles: formData.selectedStyles.filter((id) => id !== style.id),
+                          selectedStyles: formData.selectedStyles.filter((id: string) => id !== style.id),
                         })
                       }
                     }}
@@ -199,7 +199,7 @@ export function VideoForm({ video }: VideoFormProps) {
                       } else {
                         setFormData({
                           ...formData,
-                          selectedLevels: formData.selectedLevels.filter((id) => id !== level.id),
+                          selectedLevels: formData.selectedLevels.filter((id: string) => id !== level.id),
                         })
                       }
                     }}

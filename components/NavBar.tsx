@@ -8,19 +8,44 @@ import { User } from '@supabase/supabase-js'
 
 export function NavBar() {
   const [user, setUser] = useState<User | null>(null)
+  const [isAdmin, setIsAdmin] = useState(false)
   
   useEffect(() => {
     try {
       const supabase = createClient()
       
-      supabase.auth.getUser().then(({ data: { user } }) => {
+      supabase.auth.getUser().then(async ({ data: { user } }) => {
         setUser(user)
+        
+        // Check if user is admin
+        if (user) {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', user.id)
+            .single()
+          
+          setIsAdmin(profile?.role === 'admin')
+        }
       }).catch((error) => {
         console.error('Error getting user:', error)
       })
 
-      const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
         setUser(session?.user ?? null)
+        
+        // Check if user is admin
+        if (session?.user) {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', session.user.id)
+            .single()
+          
+          setIsAdmin(profile?.role === 'admin')
+        } else {
+          setIsAdmin(false)
+        }
       })
 
       return () => subscription.unsubscribe()
@@ -55,6 +80,11 @@ export function NavBar() {
               <Link href="/account" className="text-sm font-medium hover:text-primary">
                 Account
               </Link>
+              {isAdmin && (
+                <Link href="/admin" className="text-sm font-medium hover:text-primary text-primary">
+                  Admin
+                </Link>
+              )}
               <Button
                 variant="ghost"
                 onClick={handleSignOut}

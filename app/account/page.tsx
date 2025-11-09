@@ -1,15 +1,17 @@
 import { requireAuth } from '@/lib/rbac'
-import { getCurrentProfile, hasActiveSubscription } from '@/lib/auth'
+import { getCurrentProfile, hasActiveSubscription, isAdmin } from '@/lib/auth'
 import { createServerClient } from '@/lib/supabase/server'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { BillingPortalButton } from '@/components/BillingPortalButton'
 import { Badge } from '@/components/ui/badge'
+import Link from 'next/link'
 
 export default async function AccountPage() {
   const user = await requireAuth()
   const profile = await getCurrentProfile()
   const hasSub = await hasActiveSubscription(user.id)
+  const admin = await isAdmin(user.id)
   const supabase = createServerClient()
 
   const { data: subscription } = await supabase
@@ -82,6 +84,20 @@ export default async function AccountPage() {
             </CardContent>
           </Card>
         </div>
+
+        {admin && (
+          <Card className="mt-6">
+            <CardHeader>
+              <CardTitle>Admin</CardTitle>
+              <CardDescription>Access the admin dashboard</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button asChild>
+                <Link href="/admin">Go to Admin Dashboard</Link>
+              </Button>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   )

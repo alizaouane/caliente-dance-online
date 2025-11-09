@@ -116,7 +116,7 @@ export function NavBar() {
         </Link>
 
         <div className="flex items-center space-x-6">
-          {user && !checkingAdmin ? (
+          {user ? (
             <>
               <Link href="/videos" className="text-sm font-medium hover:text-primary">
                 Videos

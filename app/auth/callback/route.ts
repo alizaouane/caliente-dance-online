@@ -2,37 +2,48 @@ import { createServerClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 import { NextRequest } from 'next/server'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET(request: NextRequest) {
-  const requestUrl = new URL(request.url)
-  const code = requestUrl.searchParams.get('code')
-  const error = requestUrl.searchParams.get('error')
-  const errorDescription = requestUrl.searchParams.get('error_description')
+  try {
+    const requestUrl = new URL(request.url)
+    const code = requestUrl.searchParams.get('code')
+    const error = requestUrl.searchParams.get('error')
+    const errorDescription = requestUrl.searchParams.get('error_description')
 
-  // Handle errors (e.g., expired token)
-  if (error) {
-    const errorMessage = errorDescription || error
-    return NextResponse.redirect(
-      new URL(`/signin?error=${encodeURIComponent(errorMessage)}`, requestUrl.origin)
-    )
-  }
+    // Handle errors (e.g., expired token)
+    if (error) {
+      const errorMessage = errorDescription || error
+      return NextResponse.redirect(
+        new URL(`/signin?error=${encodeURIComponent(errorMessage)}`, requestUrl.origin)
+      )
+    }
 
-  if (code) {
-    try {
+    if (code) {
       const supabase = createServerClient()
-      const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
+      const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
       
       if (exchangeError) {
+        console.error('Error exchanging code for session:', exchangeError)
         return NextResponse.redirect(
           new URL(`/signin?error=${encodeURIComponent(exchangeError.message)}`, requestUrl.origin)
         )
       }
-    } catch (err: any) {
-      return NextResponse.redirect(
-        new URL(`/signin?error=${encodeURIComponent(err.message || 'Authentication failed')}`, requestUrl.origin)
-      )
-    }
-  }
 
-  return NextResponse.redirect(new URL('/videos', requestUrl.origin))
+      if (data?.session) {
+        // Successfully authenticated, redirect to videos
+        return NextResponse.redirect(new URL('/videos', requestUrl.origin))
+      }
+    }
+
+    // No code or session, redirect to signin
+    return NextResponse.redirect(new URL('/signin', requestUrl.origin))
+  } catch (err: any) {
+    console.error('Auth callback error:', err)
+    const requestUrl = new URL(request.url)
+    return NextResponse.redirect(
+      new URL(`/signin?error=${encodeURIComponent(err.message || 'Authentication failed')}`, requestUrl.origin)
+    )
+  }
 }
 

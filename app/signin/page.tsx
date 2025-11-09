@@ -37,30 +37,38 @@ export default function SignInPage() {
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault()
+    e.stopPropagation()
+    
+    if (loading) return
+    
     setLoading(true)
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
         password,
       })
 
-      if (error) throw error
+      if (error) {
+        throw error
+      }
 
-      toast({
-        title: 'Success',
-        description: 'Signed in successfully!',
-      })
-
-      router.push('/videos')
-      router.refresh()
+      if (data?.user) {
+        toast({
+          title: 'Success',
+          description: 'Signed in successfully!',
+        })
+        
+        // Use window.location for reliable redirect
+        window.location.href = '/videos'
+      }
     } catch (error: any) {
+      console.error('Sign in error:', error)
       toast({
         title: 'Error',
-        description: error.message || 'Failed to sign in',
+        description: error.message || 'Failed to sign in. Please check your credentials.',
         variant: 'destructive',
       })
-    } finally {
       setLoading(false)
     }
   }

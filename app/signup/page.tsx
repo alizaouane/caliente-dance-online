@@ -23,36 +23,47 @@ export default function SignUpPage() {
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault()
+    e.stopPropagation()
+    
+    if (loading) return
+    
     setLoading(true)
 
     try {
       const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin
-      const { error } = await supabase.auth.signUp({
-        email,
+      const { data, error } = await supabase.auth.signUp({
+        email: email.trim(),
         password,
         options: {
           data: {
-            full_name: fullName,
+            full_name: fullName.trim(),
           },
           emailRedirectTo: `${siteUrl}/auth/callback`,
         },
       })
 
-      if (error) throw error
+      if (error) {
+        throw error
+      }
 
-      toast({
-        title: 'Success',
-        description: 'Account created! Please check your email to verify your account.',
-      })
-
-      router.push('/signin')
+      if (data?.user) {
+        toast({
+          title: 'Success',
+          description: 'Account created! Please check your email to verify your account.',
+        })
+        
+        // Redirect to signin after a short delay
+        setTimeout(() => {
+          window.location.href = '/signin'
+        }, 2000)
+      }
     } catch (error: any) {
+      console.error('Sign up error:', error)
       toast({
         title: 'Error',
-        description: error.message || 'Failed to create account',
+        description: error.message || 'Failed to create account. Please try again.',
         variant: 'destructive',
       })
-    } finally {
       setLoading(false)
     }
   }

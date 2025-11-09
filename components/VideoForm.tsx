@@ -11,7 +11,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
 import { Checkbox } from '@/components/ui/checkbox'
-import { getPublicUrl } from '@/lib/storage'
+import { getPublicUrl } from '@/lib/utils'
 
 interface VideoFormProps {
   video?: any

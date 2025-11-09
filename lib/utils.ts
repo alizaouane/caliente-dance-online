@@ -16,3 +16,13 @@ export function formatDuration(seconds: number): string {
   return `${minutes}:${secs.toString().padStart(2, '0')}`
 }
 
+// Public URL helper for Supabase Storage (client-safe)
+export function getPublicUrl(bucket: 'videos' | 'thumbnails' | 'previews', path: string): string {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  if (!supabaseUrl) {
+    console.error('NEXT_PUBLIC_SUPABASE_URL is not set')
+    return ''
+  }
+  return `${supabaseUrl}/storage/v1/object/public/${bucket}/${path}`
+}
+

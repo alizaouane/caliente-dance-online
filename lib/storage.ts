@@ -82,14 +82,6 @@ export async function deleteFile(
   }
 }
 
-// Public URL helper (for thumbnails that should be public)
-export function getPublicUrl(bucket: keyof typeof BUCKETS, path: string): string {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-  if (!supabaseUrl) {
-    console.error('NEXT_PUBLIC_SUPABASE_URL is not set')
-    return ''
-  }
-  const bucketName = BUCKETS[bucket]
-  return `${supabaseUrl}/storage/v1/object/public/${bucketName}/${path}`
-}
+// Re-export getPublicUrl from utils for backward compatibility
+export { getPublicUrl } from './utils'
 

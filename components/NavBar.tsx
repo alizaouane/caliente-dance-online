@@ -19,13 +19,25 @@ export function NavBar() {
         
         // Check if user is admin
         if (user) {
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('role')
-            .eq('id', user.id)
-            .single()
-          
-          setIsAdmin(profile?.role === 'admin')
+          try {
+            const { data: profile, error: profileError } = await supabase
+              .from('profiles')
+              .select('role')
+              .eq('id', user.id)
+              .single()
+            
+            if (profileError) {
+              console.error('Error fetching profile:', profileError)
+              setIsAdmin(false)
+            } else {
+              const adminStatus = profile?.role === 'admin'
+              setIsAdmin(adminStatus)
+              console.log('User role:', profile?.role, 'Is admin:', adminStatus)
+            }
+          } catch (err) {
+            console.error('Error checking admin status:', err)
+            setIsAdmin(false)
+          }
         }
       }).catch((error) => {
         console.error('Error getting user:', error)
@@ -36,13 +48,25 @@ export function NavBar() {
         
         // Check if user is admin
         if (session?.user) {
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('role')
-            .eq('id', session.user.id)
-            .single()
-          
-          setIsAdmin(profile?.role === 'admin')
+          try {
+            const { data: profile, error: profileError } = await supabase
+              .from('profiles')
+              .select('role')
+              .eq('id', session.user.id)
+              .single()
+            
+            if (profileError) {
+              console.error('Error fetching profile on auth change:', profileError)
+              setIsAdmin(false)
+            } else {
+              const adminStatus = profile?.role === 'admin'
+              setIsAdmin(adminStatus)
+              console.log('Auth change - User role:', profile?.role, 'Is admin:', adminStatus)
+            }
+          } catch (err) {
+            console.error('Error checking admin status on auth change:', err)
+            setIsAdmin(false)
+          }
         } else {
           setIsAdmin(false)
         }

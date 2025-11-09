@@ -76,19 +76,32 @@ export default async function AdminDashboard() {
             <CardTitle>Quick Actions</CardTitle>
             <CardDescription>Common admin tasks</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-2">
-            <a href="/admin/videos/new" className="block text-sm text-primary hover:underline">
-              + Add New Video
-            </a>
-            <a href="/admin/styles" className="block text-sm text-primary hover:underline">
-              Manage Dance Styles
-            </a>
-            <a href="/admin/levels" className="block text-sm text-primary hover:underline">
-              Manage Levels
-            </a>
-            <a href="/admin/subscribers" className="block text-sm text-primary hover:underline">
-              View Subscribers
-            </a>
+          <CardContent className="space-y-3">
+            <Link href="/admin/videos/new">
+              <Button variant="outline" className="w-full justify-start">
+                + Add New Video
+              </Button>
+            </Link>
+            <Link href="/admin/videos">
+              <Button variant="outline" className="w-full justify-start">
+                Manage Videos
+              </Button>
+            </Link>
+            <Link href="/admin/styles">
+              <Button variant="outline" className="w-full justify-start">
+                Manage Dance Styles
+              </Button>
+            </Link>
+            <Link href="/admin/levels">
+              <Button variant="outline" className="w-full justify-start">
+                Manage Levels
+              </Button>
+            </Link>
+            <Link href="/admin/subscribers">
+              <Button variant="outline" className="w-full justify-start">
+                View Subscribers
+              </Button>
+            </Link>
           </CardContent>
         </Card>
       </div>

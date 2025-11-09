@@ -89,22 +89,26 @@ export function NavBar() {
     try {
       const supabase = createClient()
       
-      // Clear local state first
+      // Sign out from Supabase first
+      const { error } = await supabase.auth.signOut()
+      
+      if (error) {
+        console.error('Sign out error:', error)
+      }
+      
+      // Clear local state
       setUser(null)
       setIsAdmin(false)
       
-      // Sign out from Supabase
-      await supabase.auth.signOut()
-      
-      // Small delay to ensure cookies are cleared
-      await new Promise(resolve => setTimeout(resolve, 100))
-      
-      // Redirect to signin page (not home, to avoid any loops)
-      window.location.replace('/signin')
+      // Use router for navigation
+      router.push('/signin')
+      router.refresh() // Force refresh to clear any cached state
     } catch (error: any) {
       console.error('Error signing out:', error)
-      // Force redirect to signin on error
-      window.location.replace('/signin')
+      // Fallback to window.location if router fails
+      window.location.href = '/signin'
+    } finally {
+      setSigningOut(false)
     }
   }
 
@@ -152,30 +156,24 @@ export function NavBar() {
               <Link href="/pricing" className="text-sm font-medium hover:text-primary">
                 Pricing
               </Link>
-              <button
-                type="button"
-                className="text-sm font-medium hover:text-primary bg-transparent border-none p-0 cursor-pointer"
+              <Link 
+                href="/signin"
+                className="text-sm font-medium hover:text-primary"
                 onClick={(e) => {
-                  e.preventDefault()
-                  e.stopPropagation()
-                  console.log('Sign In button clicked - navigating')
-                  window.location.href = '/signin'
+                  console.log('Sign In link clicked')
                 }}
               >
                 Sign In
-              </button>
-              <button
-                type="button"
-                className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 h-10 cursor-pointer border-none"
+              </Link>
+              <Link 
+                href="/signup"
+                className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 h-10"
                 onClick={(e) => {
-                  e.preventDefault()
-                  e.stopPropagation()
-                  console.log('Sign Up button clicked - navigating')
-                  window.location.href = '/signup'
+                  console.log('Sign Up link clicked')
                 }}
               >
                 Sign Up
-              </button>
+              </Link>
             </>
           )}
         </div>

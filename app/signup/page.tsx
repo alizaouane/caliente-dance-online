@@ -54,7 +54,8 @@ export default function SignUpPage() {
         
         // Redirect to signin after a short delay
         setTimeout(() => {
-          window.location.href = '/signin'
+          router.push('/signin')
+          router.refresh()
         }, 2000)
       }
     } catch (error: any) {

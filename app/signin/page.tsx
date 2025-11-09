@@ -59,8 +59,9 @@ export default function SignInPage() {
           description: 'Signed in successfully!',
         })
         
-        // Use window.location for reliable redirect
-        window.location.href = '/videos'
+        // Use router for navigation
+        router.push('/videos')
+        router.refresh() // Force refresh to update auth state
       }
     } catch (error: any) {
       console.error('Sign in error:', error)

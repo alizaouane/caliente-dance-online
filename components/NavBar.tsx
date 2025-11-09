@@ -29,6 +29,16 @@ export function NavBar() {
     }
   }, [])
 
+  const handleSignOut = async () => {
+    try {
+      const supabase = createClient()
+      await supabase.auth.signOut()
+      window.location.href = '/'
+    } catch (error) {
+      console.error('Error signing out:', error)
+    }
+  }
+
   return (
     <nav className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center justify-between">
@@ -47,10 +57,7 @@ export function NavBar() {
               </Link>
               <Button
                 variant="ghost"
-                onClick={async () => {
-                  await supabase.auth.signOut()
-                  window.location.href = '/'
-                }}
+                onClick={handleSignOut}
               >
                 Sign Out
               </Button>

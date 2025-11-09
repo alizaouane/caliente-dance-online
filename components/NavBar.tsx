@@ -80,6 +80,8 @@ export function NavBar() {
 
   const handleSignOut = async (e: React.MouseEvent) => {
     e.preventDefault()
+    e.stopPropagation()
+    
     if (signingOut) return // Prevent double clicks
     
     setSigningOut(true)
@@ -87,23 +89,22 @@ export function NavBar() {
     try {
       const supabase = createClient()
       
-      // Sign out from Supabase
-      const { error } = await supabase.auth.signOut()
-      
-      if (error) {
-        console.error('Error signing out:', error)
-      }
-      
-      // Clear local state immediately
+      // Clear local state first
       setUser(null)
       setIsAdmin(false)
       
-      // Use replace to avoid back button issues and prevent loops
-      window.location.replace('/')
+      // Sign out from Supabase
+      await supabase.auth.signOut()
+      
+      // Small delay to ensure cookies are cleared
+      await new Promise(resolve => setTimeout(resolve, 100))
+      
+      // Redirect to signin page (not home, to avoid any loops)
+      window.location.replace('/signin')
     } catch (error: any) {
       console.error('Error signing out:', error)
-      // Force redirect even on error
-      window.location.replace('/')
+      // Force redirect to signin on error
+      window.location.replace('/signin')
     }
   }
 

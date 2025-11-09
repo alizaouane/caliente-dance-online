@@ -82,41 +82,26 @@ export function NavBar() {
     if (signingOut) return // Prevent double clicks
     
     setSigningOut(true)
+    
     try {
       const supabase = createClient()
-      const { error } = await supabase.auth.signOut()
       
-      if (error) {
+      // Sign out and redirect immediately (don't wait for response)
+      supabase.auth.signOut().then(() => {
+        // Clear local state
+        setUser(null)
+        setIsAdmin(false)
+      }).catch((error) => {
         console.error('Error signing out:', error)
-        toast({
-          title: 'Error',
-          description: error.message || 'Failed to sign out',
-          variant: 'destructive',
-        })
-        setSigningOut(false)
-        return
-      }
-      
-      // Clear local state
-      setUser(null)
-      setIsAdmin(false)
-      
-      // Redirect to home page
-      router.push('/')
-      router.refresh()
-      
-      toast({
-        title: 'Signed out',
-        description: 'You have been signed out successfully',
       })
+      
+      // Redirect immediately for faster UX
+      window.location.href = '/'
     } catch (error: any) {
       console.error('Error signing out:', error)
-      toast({
-        title: 'Error',
-        description: error.message || 'Failed to sign out',
-        variant: 'destructive',
-      })
       setSigningOut(false)
+      // Still redirect even on error
+      window.location.href = '/'
     }
   }
 

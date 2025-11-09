@@ -21,6 +21,9 @@ export async function PUT(
         duration_seconds: body.duration_seconds,
         teacher: body.teacher,
         published: body.published,
+        video_path: body.video_path || null,
+        preview_path: body.preview_path || null,
+        thumbnail_path: body.thumbnail_path || null,
       })
       .eq('id', params.id)
 

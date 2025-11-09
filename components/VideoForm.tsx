@@ -11,6 +11,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
 import { Checkbox } from '@/components/ui/checkbox'
+import { getPublicUrl } from '@/lib/storage'
 
 interface VideoFormProps {
   video?: any
@@ -21,6 +22,8 @@ export function VideoForm({ video }: VideoFormProps) {
   const { toast } = useToast()
   const supabase = createClient()
   const [loading, setLoading] = useState(false)
+  const [uploading, setUploading] = useState<string | null>(null)
+  const [uploadProgress, setUploadProgress] = useState(0)
   const [styles, setStyles] = useState<any[]>([])
   const [levels, setLevels] = useState<any[]>([])
   const [formData, setFormData] = useState({
@@ -32,6 +35,14 @@ export function VideoForm({ video }: VideoFormProps) {
     published: video?.published || false,
     selectedStyles: video?.video_styles?.map((vs: any) => vs.styles.id) || [],
     selectedLevels: video?.video_levels?.map((vl: any) => vl.levels.id) || [],
+    video_path: video?.video_path || '',
+    preview_path: video?.preview_path || '',
+    thumbnail_path: video?.thumbnail_path || '',
+  })
+  const [filePreviews, setFilePreviews] = useState({
+    video: null as string | null,
+    preview: null as string | null,
+    thumbnail: null as string | null,
   })
 
   useEffect(() => {
@@ -48,9 +59,66 @@ export function VideoForm({ video }: VideoFormProps) {
 
       setStyles(stylesData || [])
       setLevels(levelsData || [])
+
+      // Load existing file previews
+      if (video) {
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+        if (supabaseUrl) {
+          setFilePreviews({
+            video: video.video_path ? `${supabaseUrl}/storage/v1/object/public/videos/${video.video_path}` : null,
+            preview: video.preview_path ? `${supabaseUrl}/storage/v1/object/public/previews/${video.preview_path}` : null,
+            thumbnail: video.thumbnail_path ? `${supabaseUrl}/storage/v1/object/public/thumbnails/${video.thumbnail_path}` : null,
+          })
+        }
+      }
     }
     loadData()
-  }, [supabase])
+  }, [supabase, video])
+
+  const handleFileUpload = async (file: File, bucket: 'videos' | 'previews' | 'thumbnails', field: 'video_path' | 'preview_path' | 'thumbnail_path') => {
+    setUploading(field)
+    setUploadProgress(0)
+
+    try {
+      const uploadFormData = new FormData()
+      uploadFormData.append('file', file)
+      uploadFormData.append('bucket', bucket)
+      
+      // Use existing path if updating, or generate new one
+      if (formData[field]) {
+        uploadFormData.append('path', formData[field])
+      }
+
+      const response = await fetch('/api/admin/upload', {
+        method: 'POST',
+        body: uploadFormData,
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || 'Upload failed')
+      }
+
+      const { path, url } = await response.json()
+      
+      setFormData({ ...formData, [field]: path })
+      setFilePreviews({ ...filePreviews, [field === 'video_path' ? 'video' : field === 'preview_path' ? 'preview' : 'thumbnail']: url })
+      
+      toast({
+        title: 'Success',
+        description: 'File uploaded successfully!',
+      })
+    } catch (error: any) {
+      toast({
+        title: 'Upload Error',
+        description: error.message || 'Failed to upload file',
+        variant: 'destructive',
+      })
+    } finally {
+      setUploading(null)
+      setUploadProgress(0)
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -210,6 +278,110 @@ export function VideoForm({ video }: VideoFormProps) {
                 </div>
               ))}
             </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Media Files</CardTitle>
+          <CardDescription>Upload video, preview, and thumbnail files</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* Video File Upload */}
+          <div className="space-y-2">
+            <Label htmlFor="video">Video File (MP4, WebM, MOV)</Label>
+            {filePreviews.video && (
+              <div className="mb-2">
+                <video
+                  src={filePreviews.video}
+                  controls
+                  className="w-full max-w-md rounded border"
+                  style={{ maxHeight: '200px' }}
+                />
+                <p className="text-sm text-muted-foreground mt-1">Current video</p>
+              </div>
+            )}
+            <Input
+              id="video"
+              type="file"
+              accept="video/mp4,video/webm,video/quicktime"
+              onChange={(e) => {
+                const file = e.target.files?.[0]
+                if (file) handleFileUpload(file, 'videos', 'video_path')
+              }}
+              disabled={uploading === 'video_path'}
+            />
+            {uploading === 'video_path' && (
+              <div className="text-sm text-muted-foreground">Uploading video...</div>
+            )}
+            {formData.video_path && (
+              <p className="text-sm text-muted-foreground">Path: {formData.video_path}</p>
+            )}
+          </div>
+
+          {/* Preview File Upload */}
+          <div className="space-y-2">
+            <Label htmlFor="preview">Preview File (MP4, WebM, MOV) - Optional</Label>
+            {filePreviews.preview && (
+              <div className="mb-2">
+                <video
+                  src={filePreviews.preview}
+                  controls
+                  className="w-full max-w-md rounded border"
+                  style={{ maxHeight: '200px' }}
+                />
+                <p className="text-sm text-muted-foreground mt-1">Current preview</p>
+              </div>
+            )}
+            <Input
+              id="preview"
+              type="file"
+              accept="video/mp4,video/webm,video/quicktime"
+              onChange={(e) => {
+                const file = e.target.files?.[0]
+                if (file) handleFileUpload(file, 'previews', 'preview_path')
+              }}
+              disabled={uploading === 'preview_path'}
+            />
+            {uploading === 'preview_path' && (
+              <div className="text-sm text-muted-foreground">Uploading preview...</div>
+            )}
+            {formData.preview_path && (
+              <p className="text-sm text-muted-foreground">Path: {formData.preview_path}</p>
+            )}
+          </div>
+
+          {/* Thumbnail Upload */}
+          <div className="space-y-2">
+            <Label htmlFor="thumbnail">Thumbnail Image (JPG, PNG, WebP)</Label>
+            {filePreviews.thumbnail && (
+              <div className="mb-2">
+                <img
+                  src={filePreviews.thumbnail}
+                  alt="Thumbnail"
+                  className="w-full max-w-md rounded border"
+                  style={{ maxHeight: '200px', objectFit: 'contain' }}
+                />
+                <p className="text-sm text-muted-foreground mt-1">Current thumbnail</p>
+              </div>
+            )}
+            <Input
+              id="thumbnail"
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              onChange={(e) => {
+                const file = e.target.files?.[0]
+                if (file) handleFileUpload(file, 'thumbnails', 'thumbnail_path')
+              }}
+              disabled={uploading === 'thumbnail_path'}
+            />
+            {uploading === 'thumbnail_path' && (
+              <div className="text-sm text-muted-foreground">Uploading thumbnail...</div>
+            )}
+            {formData.thumbnail_path && (
+              <p className="text-sm text-muted-foreground">Path: {formData.thumbnail_path}</p>
+            )}
           </div>
         </CardContent>
       </Card>

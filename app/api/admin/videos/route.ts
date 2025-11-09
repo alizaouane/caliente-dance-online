@@ -17,6 +17,9 @@ export async function POST(request: NextRequest) {
         duration_seconds: body.duration_seconds,
         teacher: body.teacher,
         published: body.published,
+        video_path: body.video_path || null,
+        preview_path: body.preview_path || null,
+        thumbnail_path: body.thumbnail_path || null,
       })
       .select()
       .single()

@@ -3,8 +3,16 @@ import { cookies } from 'next/headers'
 import { Database } from '@/types/database'
 
 export const createServerClient = () => {
-  const cookieStore = cookies()
-  return createServerComponentClient<Database>({ cookies: () => cookieStore })
+  try {
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+      throw new Error('Missing Supabase environment variables')
+    }
+    const cookieStore = cookies()
+    return createServerComponentClient<Database>({ cookies: () => cookieStore })
+  } catch (error) {
+    console.error('Error creating Supabase server client:', error)
+    throw error
+  }
 }
 
 // Service role client for admin operations (use only in API routes with proper auth checks)

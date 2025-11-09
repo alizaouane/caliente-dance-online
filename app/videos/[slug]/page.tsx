@@ -76,10 +76,15 @@ export default async function VideoPage({
   let videoUrl: string | null = null
   let previewUrl: string | null = null
 
-  if (hasSub && video.video_path) {
-    videoUrl = await getSignedUrl('videos', video.video_path, 3600)
-  } else if (video.preview_path) {
-    previewUrl = await getSignedUrl('previews', video.preview_path, 3600)
+  try {
+    if (hasSub && video.video_path) {
+      videoUrl = await getSignedUrl('videos', video.video_path, 3600)
+    } else if (video.preview_path) {
+      previewUrl = await getSignedUrl('previews', video.preview_path, 3600)
+    }
+  } catch (error) {
+    console.error('Error getting video URLs:', error)
+    // Continue without video URLs - will show subscribe CTA
   }
 
   const thumbnailUrl = video.thumbnail_path

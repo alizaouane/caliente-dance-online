@@ -8,19 +8,26 @@ import { User } from '@supabase/supabase-js'
 
 export function NavBar() {
   const [user, setUser] = useState<User | null>(null)
-  const supabase = createClient()
-
+  
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      setUser(user)
-    })
+    try {
+      const supabase = createClient()
+      
+      supabase.auth.getUser().then(({ data: { user } }) => {
+        setUser(user)
+      }).catch((error) => {
+        console.error('Error getting user:', error)
+      })
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null)
-    })
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+        setUser(session?.user ?? null)
+      })
 
-    return () => subscription.unsubscribe()
-  }, [supabase])
+      return () => subscription.unsubscribe()
+    } catch (error) {
+      console.error('Error initializing NavBar:', error)
+    }
+  }, [])
 
   return (
     <nav className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">

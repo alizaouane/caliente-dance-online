@@ -155,13 +155,23 @@ export function NavBar() {
               <Button 
                 variant="ghost" 
                 type="button"
-                onClick={() => router.push('/signin')}
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  console.log('Sign In clicked')
+                  router.push('/signin')
+                }}
               >
                 Sign In
               </Button>
               <Button 
                 type="button"
-                onClick={() => router.push('/signup')}
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  console.log('Sign Up clicked')
+                  router.push('/signup')
+                }}
               >
                 Sign Up
               </Button>

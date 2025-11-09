@@ -152,12 +152,12 @@ export function NavBar() {
               <Link href="/pricing" className="text-sm font-medium hover:text-primary">
                 Pricing
               </Link>
-              <Link href="/signin">
-                <Button variant="ghost">Sign In</Button>
-              </Link>
-              <Link href="/signup">
-                <Button>Sign Up</Button>
-              </Link>
+              <Button variant="ghost" asChild>
+                <Link href="/signin">Sign In</Link>
+              </Button>
+              <Button asChild>
+                <Link href="/signup">Sign Up</Link>
+              </Button>
             </>
           )}
         </div>

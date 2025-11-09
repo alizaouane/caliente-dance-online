@@ -26,6 +26,7 @@ export default function SignUpPage() {
     setLoading(true)
 
     try {
+      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin
       const { error } = await supabase.auth.signUp({
         email,
         password,
@@ -33,6 +34,7 @@ export default function SignUpPage() {
           data: {
             full_name: fullName,
           },
+          emailRedirectTo: `${siteUrl}/auth/callback`,
         },
       })
 

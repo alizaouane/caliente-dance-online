@@ -20,6 +20,21 @@ export default function SignInPage() {
   const { toast } = useToast()
   const supabase = createClient()
 
+  // Check for error in URL params (from email confirmation)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const error = params.get('error')
+    if (error) {
+      toast({
+        title: 'Authentication Error',
+        description: decodeURIComponent(error),
+        variant: 'destructive',
+      })
+      // Clean up URL
+      router.replace('/signin')
+    }
+  }, [router, toast])
+
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)

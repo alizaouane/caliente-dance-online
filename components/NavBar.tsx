@@ -160,7 +160,8 @@ export function NavBar() {
                 href="/signin"
                 className="text-sm font-medium hover:text-primary"
                 onClick={(e) => {
-                  console.log('Sign In link clicked')
+                  console.log('Sign In link clicked - href:', e.currentTarget.href)
+                  // Don't prevent default - let Link handle navigation
                 }}
               >
                 Sign In
@@ -169,7 +170,8 @@ export function NavBar() {
                 href="/signup"
                 className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 h-10"
                 onClick={(e) => {
-                  console.log('Sign Up link clicked')
+                  console.log('Sign Up link clicked - href:', e.currentTarget.href)
+                  // Don't prevent default - let Link handle navigation
                 }}
               >
                 Sign Up

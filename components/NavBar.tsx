@@ -1,15 +1,20 @@
 'use client'
 
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { createClient } from '@/lib/supabase/client'
 import { useEffect, useState } from 'react'
 import { User } from '@supabase/supabase-js'
+import { useToast } from '@/components/ui/use-toast'
 
 export function NavBar() {
+  const router = useRouter()
+  const { toast } = useToast()
   const [user, setUser] = useState<User | null>(null)
   const [isAdmin, setIsAdmin] = useState(false)
   const [checkingAdmin, setCheckingAdmin] = useState(true)
+  const [signingOut, setSigningOut] = useState(false)
   
   const checkAdminStatus = async (userId: string, supabase: ReturnType<typeof createClient>) => {
     try {
@@ -74,12 +79,44 @@ export function NavBar() {
   }, [])
 
   const handleSignOut = async () => {
+    if (signingOut) return // Prevent double clicks
+    
+    setSigningOut(true)
     try {
       const supabase = createClient()
-      await supabase.auth.signOut()
-      window.location.href = '/'
-    } catch (error) {
+      const { error } = await supabase.auth.signOut()
+      
+      if (error) {
+        console.error('Error signing out:', error)
+        toast({
+          title: 'Error',
+          description: error.message || 'Failed to sign out',
+          variant: 'destructive',
+        })
+        setSigningOut(false)
+        return
+      }
+      
+      // Clear local state
+      setUser(null)
+      setIsAdmin(false)
+      
+      // Redirect to home page
+      router.push('/')
+      router.refresh()
+      
+      toast({
+        title: 'Signed out',
+        description: 'You have been signed out successfully',
+      })
+    } catch (error: any) {
       console.error('Error signing out:', error)
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to sign out',
+        variant: 'destructive',
+      })
+      setSigningOut(false)
     }
   }
 
@@ -117,8 +154,9 @@ export function NavBar() {
               <Button
                 variant="ghost"
                 onClick={handleSignOut}
+                disabled={signingOut}
               >
-                Sign Out
+                {signingOut ? 'Signing out...' : 'Sign Out'}
               </Button>
             </>
           ) : (

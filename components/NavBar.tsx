@@ -85,21 +85,20 @@ export function NavBar() {
     
     try {
       const supabase = createClient()
+      const { error } = await supabase.auth.signOut()
       
-      // Sign out and redirect immediately (don't wait for response)
-      supabase.auth.signOut().then(() => {
-        // Clear local state
-        setUser(null)
-        setIsAdmin(false)
-      }).catch((error) => {
+      if (error) {
         console.error('Error signing out:', error)
-      })
+      }
       
-      // Redirect immediately for faster UX
+      // Clear local state
+      setUser(null)
+      setIsAdmin(false)
+      
+      // Redirect to home page
       window.location.href = '/'
     } catch (error: any) {
       console.error('Error signing out:', error)
-      setSigningOut(false)
       // Still redirect even on error
       window.location.href = '/'
     }

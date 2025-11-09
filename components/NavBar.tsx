@@ -152,11 +152,18 @@ export function NavBar() {
               <Link href="/pricing" className="text-sm font-medium hover:text-primary">
                 Pricing
               </Link>
-              <Button variant="ghost" asChild>
-                <Link href="/signin">Sign In</Link>
+              <Button 
+                variant="ghost" 
+                type="button"
+                onClick={() => router.push('/signin')}
+              >
+                Sign In
               </Button>
-              <Button asChild>
-                <Link href="/signup">Sign Up</Link>
+              <Button 
+                type="button"
+                onClick={() => router.push('/signup')}
+              >
+                Sign Up
               </Button>
             </>
           )}

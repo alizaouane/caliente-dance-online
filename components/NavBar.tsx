@@ -152,29 +152,18 @@ export function NavBar() {
               <Link href="/pricing" className="text-sm font-medium hover:text-primary">
                 Pricing
               </Link>
-              <Button 
-                variant="ghost" 
-                type="button"
-                onClick={(e) => {
-                  e.preventDefault()
-                  e.stopPropagation()
-                  console.log('Sign In clicked')
-                  router.push('/signin')
-                }}
+              <Link 
+                href="/signin"
+                className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2"
               >
                 Sign In
-              </Button>
-              <Button 
-                type="button"
-                onClick={(e) => {
-                  e.preventDefault()
-                  e.stopPropagation()
-                  console.log('Sign Up clicked')
-                  router.push('/signup')
-                }}
+              </Link>
+              <Link 
+                href="/signup"
+                className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2"
               >
                 Sign Up
-              </Button>
+              </Link>
             </>
           )}
         </div>

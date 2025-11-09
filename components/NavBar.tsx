@@ -9,6 +9,33 @@ import { User } from '@supabase/supabase-js'
 export function NavBar() {
   const [user, setUser] = useState<User | null>(null)
   const [isAdmin, setIsAdmin] = useState(false)
+  const [checkingAdmin, setCheckingAdmin] = useState(true)
+  
+  const checkAdminStatus = async (userId: string, supabase: ReturnType<typeof createClient>) => {
+    try {
+      setCheckingAdmin(true)
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', userId)
+        .single()
+      
+      if (profileError) {
+        console.error('Error fetching profile:', profileError)
+        console.error('Profile error details:', JSON.stringify(profileError, null, 2))
+        setIsAdmin(false)
+      } else {
+        const adminStatus = profile?.role === 'admin'
+        setIsAdmin(adminStatus)
+        console.log('✅ User role:', profile?.role, 'Is admin:', adminStatus, 'User ID:', userId)
+      }
+    } catch (err) {
+      console.error('Error checking admin status:', err)
+      setIsAdmin(false)
+    } finally {
+      setCheckingAdmin(false)
+    }
+  }
   
   useEffect(() => {
     try {
@@ -19,28 +46,13 @@ export function NavBar() {
         
         // Check if user is admin
         if (user) {
-          try {
-            const { data: profile, error: profileError } = await supabase
-              .from('profiles')
-              .select('role')
-              .eq('id', user.id)
-              .single()
-            
-            if (profileError) {
-              console.error('Error fetching profile:', profileError)
-              setIsAdmin(false)
-            } else {
-              const adminStatus = profile?.role === 'admin'
-              setIsAdmin(adminStatus)
-              console.log('User role:', profile?.role, 'Is admin:', adminStatus)
-            }
-          } catch (err) {
-            console.error('Error checking admin status:', err)
-            setIsAdmin(false)
-          }
+          await checkAdminStatus(user.id, supabase)
+        } else {
+          setCheckingAdmin(false)
         }
       }).catch((error) => {
         console.error('Error getting user:', error)
+        setCheckingAdmin(false)
       })
 
       const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
@@ -48,27 +60,10 @@ export function NavBar() {
         
         // Check if user is admin
         if (session?.user) {
-          try {
-            const { data: profile, error: profileError } = await supabase
-              .from('profiles')
-              .select('role')
-              .eq('id', session.user.id)
-              .single()
-            
-            if (profileError) {
-              console.error('Error fetching profile on auth change:', profileError)
-              setIsAdmin(false)
-            } else {
-              const adminStatus = profile?.role === 'admin'
-              setIsAdmin(adminStatus)
-              console.log('Auth change - User role:', profile?.role, 'Is admin:', adminStatus)
-            }
-          } catch (err) {
-            console.error('Error checking admin status on auth change:', err)
-            setIsAdmin(false)
-          }
+          await checkAdminStatus(session.user.id, supabase)
         } else {
           setIsAdmin(false)
+          setCheckingAdmin(false)
         }
       })
 
@@ -105,8 +100,18 @@ export function NavBar() {
                 Account
               </Link>
               {isAdmin && (
-                <Link href="/admin" className="text-sm font-medium hover:text-primary text-primary">
+                <Link href="/admin" className="text-sm font-medium hover:text-primary text-primary font-semibold">
                   Admin
+                </Link>
+              )}
+              {/* Temporary: Always show admin link for debugging - will be hidden if not admin by middleware */}
+              {!isAdmin && !checkingAdmin && (
+                <Link 
+                  href="/admin" 
+                  className="text-sm font-medium hover:text-primary text-orange-600"
+                  title="Click to test admin access (will redirect if not admin)"
+                >
+                  Admin (Test)
                 </Link>
               )}
               <Button

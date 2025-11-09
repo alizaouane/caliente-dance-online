@@ -13,7 +13,7 @@ export function NavBar() {
   const { toast } = useToast()
   const [user, setUser] = useState<User | null>(null)
   const [isAdmin, setIsAdmin] = useState(false)
-  const [checkingAdmin, setCheckingAdmin] = useState(true)
+  const [checkingAdmin, setCheckingAdmin] = useState(false)
   const [signingOut, setSigningOut] = useState(false)
   
   const checkAdminStatus = async (userId: string, supabase: ReturnType<typeof createClient>) => {

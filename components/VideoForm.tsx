@@ -62,14 +62,11 @@ export function VideoForm({ video }: VideoFormProps) {
 
       // Load existing file previews
       if (video) {
-        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-        if (supabaseUrl) {
-          setFilePreviews({
-            video: video.video_path ? `${supabaseUrl}/storage/v1/object/public/videos/${video.video_path}` : null,
-            preview: video.preview_path ? `${supabaseUrl}/storage/v1/object/public/previews/${video.preview_path}` : null,
-            thumbnail: video.thumbnail_path ? `${supabaseUrl}/storage/v1/object/public/thumbnails/${video.thumbnail_path}` : null,
-          })
-        }
+        setFilePreviews({
+          video: video.video_path ? getPublicUrl('videos', video.video_path) : null,
+          preview: video.preview_path ? getPublicUrl('previews', video.preview_path) : null,
+          thumbnail: video.thumbnail_path ? getPublicUrl('thumbnails', video.thumbnail_path) : null,
+        })
       }
     }
     loadData()

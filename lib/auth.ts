@@ -5,10 +5,33 @@ export async function getCurrentUser() {
   try {
     const supabase = createServerClient()
     const { data: { user }, error } = await supabase.auth.getUser()
+    
     if (error) {
       console.error('Error getting user:', error)
+      // If user not found or session invalid, clear the session
+      if (error.message?.includes('JWT') || error.message?.includes('session')) {
+        await supabase.auth.signOut()
+      }
       return null
     }
+    
+    // Verify user still exists by checking if we can get their profile
+    // This catches cases where user was deleted but session still exists
+    if (user) {
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('id', user.id)
+        .single()
+      
+      // If profile doesn't exist, user was likely deleted
+      if (profileError && profileError.code === 'PGRST116') {
+        console.warn('User profile not found - user may have been deleted, clearing session')
+        await supabase.auth.signOut()
+        return null
+      }
+    }
+    
     return user
   } catch (error) {
     console.error('Error in getCurrentUser:', error)

@@ -28,25 +28,44 @@ export function NavBar() {
     
     // Get initial user
     supabase.auth.getUser()
-      .then(({ data: { user }, error }) => {
+      .then(async ({ data: { user }, error }) => {
         if (!mounted) return
         
         if (error) {
           console.error('Error getting user:', error)
+          // Clear session if invalid
+          await supabase.auth.signOut()
           setUser(null)
           setLoading(false)
           clearTimeout(timeoutId)
           return
         }
         
-        setUser(user || null)
+        // Verify user profile exists (catches deleted users)
         if (user) {
+          const { error: profileError } = await supabase
+            .from('profiles')
+            .select('id')
+            .eq('id', user.id)
+            .single()
+          
+          if (profileError && profileError.code === 'PGRST116') {
+            console.warn('User profile not found - user was deleted, clearing session')
+            await supabase.auth.signOut()
+            setUser(null)
+            setLoading(false)
+            clearTimeout(timeoutId)
+            return
+          }
+          
+          setUser(user)
           checkAdminStatus(user.id, supabase).finally(() => {
             if (mounted) {
               clearTimeout(timeoutId)
             }
           })
         } else {
+          setUser(null)
           setLoading(false)
           clearTimeout(timeoutId)
         }

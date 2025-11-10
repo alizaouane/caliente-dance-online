@@ -16,19 +16,54 @@ export function NavBar() {
   
   useEffect(() => {
     const supabase = createClient()
+    let mounted = true
     
-    // Get initial user
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      setUser(user)
-      if (user) {
-        checkAdminStatus(user.id, supabase)
-      } else {
+    // Set a timeout to ensure loading always resolves
+    const timeoutId = setTimeout(() => {
+      if (mounted) {
+        console.warn('Auth check timeout - setting loading to false')
         setLoading(false)
       }
-    })
+    }, 3000) // 3 second timeout
+    
+    // Get initial user
+    supabase.auth.getUser()
+      .then(({ data: { user }, error }) => {
+        if (!mounted) return
+        
+        if (error) {
+          console.error('Error getting user:', error)
+          setUser(null)
+          setLoading(false)
+          clearTimeout(timeoutId)
+          return
+        }
+        
+        setUser(user || null)
+        if (user) {
+          checkAdminStatus(user.id, supabase).finally(() => {
+            if (mounted) {
+              clearTimeout(timeoutId)
+            }
+          })
+        } else {
+          setLoading(false)
+          clearTimeout(timeoutId)
+        }
+      })
+      .catch((error) => {
+        console.error('Error in getUser:', error)
+        if (mounted) {
+          setUser(null)
+          setLoading(false)
+          clearTimeout(timeoutId)
+        }
+      })
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (!mounted) return
+      
       const currentUser = session?.user ?? null
       setUser(currentUser)
       
@@ -38,9 +73,12 @@ export function NavBar() {
         setIsAdmin(false)
         setLoading(false)
       }
+      clearTimeout(timeoutId)
     })
 
     return () => {
+      mounted = false
+      clearTimeout(timeoutId)
       subscription.unsubscribe()
     }
   }, [])

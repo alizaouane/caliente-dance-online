@@ -25,12 +25,35 @@ export default function SignUpPage() {
   useEffect(() => {
     setMounted(true)
     
-    // Check if already logged in
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (user) {
-        router.push('/videos')
-      }
-    })
+    // Check if already logged in (but don't block if check fails)
+    supabase.auth.getUser()
+      .then(async ({ data: { user }, error: userError }) => {
+        if (userError) {
+          console.error('Error checking user:', userError)
+          return
+        }
+        if (user) {
+          try {
+            // Verify profile exists before redirecting
+            const { error: profileError } = await supabase
+              .from('profiles')
+              .select('id')
+              .eq('id', user.id)
+              .single()
+            
+            if (!profileError) {
+              router.push('/videos')
+            }
+          } catch (error) {
+            // If profile check fails, allow signup
+            console.error('Profile check error:', error)
+          }
+        }
+      })
+      .catch((error) => {
+        console.error('Error in getUser check:', error)
+        // Allow signup to proceed even if check fails
+      })
   }, [router, supabase])
 
   const handleSignUp = async (e: React.FormEvent) => {

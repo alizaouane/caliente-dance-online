@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
@@ -17,15 +17,27 @@ export default function SignUpPage() {
   const [password, setPassword] = useState('')
   const [fullName, setFullName] = useState('')
   const [loading, setLoading] = useState(false)
+  const [mounted, setMounted] = useState(false)
   const router = useRouter()
   const { toast } = useToast()
   const supabase = createClient()
+
+  useEffect(() => {
+    setMounted(true)
+    
+    // Check if already logged in
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) {
+        router.push('/videos')
+      }
+    })
+  }, [router, supabase])
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault()
     e.stopPropagation()
     
-    if (loading) return
+    if (loading || !mounted) return
     
     setLoading(true)
 
@@ -54,9 +66,10 @@ export default function SignUpPage() {
         
         // Redirect to signin after a short delay
         setTimeout(() => {
-          router.push('/signin')
-          router.refresh()
+          window.location.href = '/signin'
         }, 2000)
+      } else {
+        throw new Error('No user returned from signup')
       }
     } catch (error: any) {
       console.error('Sign up error:', error)
@@ -70,12 +83,15 @@ export default function SignUpPage() {
   }
 
   const handleGoogleSignUp = async () => {
+    if (loading || !mounted) return
+    
     setLoading(true)
     try {
+      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
+          redirectTo: `${siteUrl}/auth/callback`,
         },
       })
 
@@ -88,6 +104,18 @@ export default function SignUpPage() {
       })
       setLoading(false)
     }
+  }
+
+  if (!mounted) {
+    return (
+      <div className="container flex items-center justify-center min-h-[calc(100vh-200px)] py-12">
+        <Card className="w-full max-w-md">
+          <CardContent className="pt-6">
+            <p>Loading...</p>
+          </CardContent>
+        </Card>
+      </div>
+    )
   }
 
   return (
@@ -110,6 +138,8 @@ export default function SignUpPage() {
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 required
+                disabled={loading}
+                autoComplete="name"
               />
             </div>
             <div className="space-y-2">
@@ -121,6 +151,8 @@ export default function SignUpPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                disabled={loading}
+                autoComplete="email"
               />
             </div>
             <div className="space-y-2">
@@ -131,10 +163,12 @@ export default function SignUpPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                disabled={loading}
                 minLength={6}
+                autoComplete="new-password"
               />
             </div>
-            <Button type="submit" className="w-full" disabled={loading}>
+            <Button type="submit" className="w-full" disabled={loading || !mounted}>
               {loading ? 'Creating account...' : 'Sign Up'}
             </Button>
           </form>
@@ -151,7 +185,7 @@ export default function SignUpPage() {
             variant="outline"
             className="w-full"
             onClick={handleGoogleSignUp}
-            disabled={loading}
+            disabled={loading || !mounted}
           >
             Google
           </Button>
@@ -168,4 +202,3 @@ export default function SignUpPage() {
     </div>
   )
 }
-

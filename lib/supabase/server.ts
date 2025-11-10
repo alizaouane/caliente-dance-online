@@ -3,16 +3,12 @@ import { cookies } from 'next/headers'
 import { Database } from '@/types/database'
 
 export const createServerClient = () => {
-  try {
-    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-      throw new Error('Missing Supabase environment variables')
-    }
-    const cookieStore = cookies()
-    return createServerComponentClient<Database>({ cookies: () => cookieStore })
-  } catch (error) {
-    console.error('Error creating Supabase server client:', error)
-    throw error
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+    throw new Error('Missing Supabase environment variables: NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY')
   }
+  
+  const cookieStore = cookies()
+  return createServerComponentClient<Database>({ cookies: () => cookieStore })
 }
 
 // Service role client for admin operations (use only in API routes with proper auth checks)

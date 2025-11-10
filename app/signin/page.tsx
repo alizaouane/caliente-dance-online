@@ -16,12 +16,15 @@ export default function SignInPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
+  const [mounted, setMounted] = useState(false)
   const router = useRouter()
   const { toast } = useToast()
   const supabase = createClient()
 
-  // Check for error in URL params (from email confirmation)
   useEffect(() => {
+    setMounted(true)
+    
+    // Check for error in URL params (from email confirmation)
     const params = new URLSearchParams(window.location.search)
     const error = params.get('error')
     if (error) {
@@ -31,15 +34,22 @@ export default function SignInPage() {
         variant: 'destructive',
       })
       // Clean up URL
-      router.replace('/signin')
+      window.history.replaceState({}, '', '/signin')
     }
-  }, [router, toast])
+
+    // Check if already logged in
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) {
+        router.push('/videos')
+      }
+    })
+  }, [router, toast, supabase])
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault()
     e.stopPropagation()
     
-    if (loading) return
+    if (loading || !mounted) return
     
     setLoading(true)
 
@@ -53,15 +63,19 @@ export default function SignInPage() {
         throw error
       }
 
-      if (data?.user) {
+      if (data?.user && data?.session) {
         toast({
           title: 'Success',
           description: 'Signed in successfully!',
         })
         
-        // Use router for navigation
-        router.push('/videos')
-        router.refresh() // Force refresh to update auth state
+        // Wait a moment for session to be set
+        await new Promise(resolve => setTimeout(resolve, 100))
+        
+        // Force a hard navigation to ensure session is loaded
+        window.location.href = '/videos'
+      } else {
+        throw new Error('No user or session returned')
       }
     } catch (error: any) {
       console.error('Sign in error:', error)
@@ -75,12 +89,15 @@ export default function SignInPage() {
   }
 
   const handleGoogleSignIn = async () => {
+    if (loading || !mounted) return
+    
     setLoading(true)
     try {
+      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
+          redirectTo: `${siteUrl}/auth/callback`,
         },
       })
 
@@ -93,6 +110,18 @@ export default function SignInPage() {
       })
       setLoading(false)
     }
+  }
+
+  if (!mounted) {
+    return (
+      <div className="container flex items-center justify-center min-h-[calc(100vh-200px)] py-12">
+        <Card className="w-full max-w-md">
+          <CardContent className="pt-6">
+            <p>Loading...</p>
+          </CardContent>
+        </Card>
+      </div>
+    )
   }
 
   return (
@@ -115,6 +144,8 @@ export default function SignInPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                disabled={loading}
+                autoComplete="email"
               />
             </div>
             <div className="space-y-2">
@@ -125,9 +156,11 @@ export default function SignInPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                disabled={loading}
+                autoComplete="current-password"
               />
             </div>
-            <Button type="submit" className="w-full" disabled={loading}>
+            <Button type="submit" className="w-full" disabled={loading || !mounted}>
               {loading ? 'Signing in...' : 'Sign In'}
             </Button>
           </form>
@@ -144,7 +177,7 @@ export default function SignInPage() {
             variant="outline"
             className="w-full"
             onClick={handleGoogleSignIn}
-            disabled={loading}
+            disabled={loading || !mounted}
           >
             Google
           </Button>
@@ -161,4 +194,3 @@ export default function SignInPage() {
     </div>
   )
 }
-

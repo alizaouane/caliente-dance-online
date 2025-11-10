@@ -84,11 +84,29 @@ export function NavBar() {
       if (!mounted) return
       
       const currentUser = session?.user ?? null
-      setUser(currentUser)
       
+      // Verify user profile exists (catches deleted users)
       if (currentUser) {
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('id', currentUser.id)
+          .single()
+        
+        if (profileError && profileError.code === 'PGRST116') {
+          console.warn('User profile not found - user was deleted, clearing session')
+          await supabase.auth.signOut()
+          setUser(null)
+          setIsAdmin(false)
+          setLoading(false)
+          clearTimeout(timeoutId)
+          return
+        }
+        
+        setUser(currentUser)
         await checkAdminStatus(currentUser.id, supabase)
       } else {
+        setUser(null)
         setIsAdmin(false)
         setLoading(false)
       }

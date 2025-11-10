@@ -19,81 +19,61 @@ export default function SignInPage() {
   const [mounted, setMounted] = useState(false)
   const router = useRouter()
   const { toast } = useToast()
-  const supabase = createClient()
 
   useEffect(() => {
     setMounted(true)
     
-    // Check for error in URL params (from email confirmation)
-    const params = new URLSearchParams(window.location.search)
-    const error = params.get('error')
-    if (error) {
-      toast({
-        title: 'Authentication Error',
-        description: decodeURIComponent(error),
-        variant: 'destructive',
-      })
-      // Clean up URL
-      window.history.replaceState({}, '', '/signin')
+    // Check for error in URL params
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search)
+      const error = params.get('error')
+      if (error) {
+        toast({
+          title: 'Authentication Error',
+          description: decodeURIComponent(error),
+          variant: 'destructive',
+        })
+        window.history.replaceState({}, '', '/signin')
+      }
     }
-
-    // Check if already logged in (but don't block if check fails)
-    supabase.auth.getUser()
-      .then(async ({ data: { user }, error: userError }) => {
-        if (userError) {
-          console.error('Error checking user:', userError)
-          return
-        }
-        if (user) {
-          try {
-            // Verify profile exists before redirecting
-            const { error: profileError } = await supabase
-              .from('profiles')
-              .select('id')
-              .eq('id', user.id)
-              .single()
-            
-            if (!profileError) {
-              router.push('/videos')
-            }
-          } catch (error) {
-            // If profile check fails, allow signin
-            console.error('Profile check error:', error)
-          }
-        }
-      })
-      .catch((error) => {
-        console.error('Error in getUser check:', error)
-        // Allow signin to proceed even if check fails
-      })
-  }, [router, toast, supabase])
+  }, [toast])
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault()
     e.stopPropagation()
     
-    if (loading || !mounted) return
+    if (loading || !mounted) {
+      console.log('Sign in blocked: loading=', loading, 'mounted=', mounted)
+      return
+    }
     
+    console.log('Starting sign in...')
     setLoading(true)
 
     try {
+      const supabase = createClient()
+      console.log('Supabase client created')
+      
       const { data, error } = await supabase.auth.signInWithPassword({
         email: email.trim(),
         password,
       })
+
+      console.log('Sign in response:', { data: !!data, error: error?.message })
 
       if (error) {
         throw error
       }
 
       if (data?.user && data?.session) {
+        console.log('Sign in successful, redirecting...')
         toast({
           title: 'Success',
           description: 'Signed in successfully!',
         })
         
         // Wait a moment for session to be set
-        await new Promise(resolve => setTimeout(resolve, 100))
+        await new Promise(resolve => setTimeout(resolve, 200))
         
         // Force a hard navigation to ensure session is loaded
         window.location.href = '/videos'
@@ -116,7 +96,8 @@ export default function SignInPage() {
     
     setLoading(true)
     try {
-      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin
+      const supabase = createClient()
+      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || (typeof window !== 'undefined' ? window.location.origin : '')
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {

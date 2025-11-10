@@ -20,52 +20,28 @@ export default function SignUpPage() {
   const [mounted, setMounted] = useState(false)
   const router = useRouter()
   const { toast } = useToast()
-  const supabase = createClient()
 
   useEffect(() => {
     setMounted(true)
-    
-    // Check if already logged in (but don't block if check fails)
-    supabase.auth.getUser()
-      .then(async ({ data: { user }, error: userError }) => {
-        if (userError) {
-          console.error('Error checking user:', userError)
-          return
-        }
-        if (user) {
-          try {
-            // Verify profile exists before redirecting
-            const { error: profileError } = await supabase
-              .from('profiles')
-              .select('id')
-              .eq('id', user.id)
-              .single()
-            
-            if (!profileError) {
-              router.push('/videos')
-            }
-          } catch (error) {
-            // If profile check fails, allow signup
-            console.error('Profile check error:', error)
-          }
-        }
-      })
-      .catch((error) => {
-        console.error('Error in getUser check:', error)
-        // Allow signup to proceed even if check fails
-      })
-  }, [router, supabase])
+  }, [])
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault()
     e.stopPropagation()
     
-    if (loading || !mounted) return
+    if (loading || !mounted) {
+      console.log('Sign up blocked: loading=', loading, 'mounted=', mounted)
+      return
+    }
     
+    console.log('Starting sign up...')
     setLoading(true)
 
     try {
-      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin
+      const supabase = createClient()
+      console.log('Supabase client created')
+      
+      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || (typeof window !== 'undefined' ? window.location.origin : '')
       const { data, error } = await supabase.auth.signUp({
         email: email.trim(),
         password,
@@ -77,11 +53,14 @@ export default function SignUpPage() {
         },
       })
 
+      console.log('Sign up response:', { data: !!data, error: error?.message })
+
       if (error) {
         throw error
       }
 
       if (data?.user) {
+        console.log('Sign up successful')
         toast({
           title: 'Success',
           description: 'Account created! Please check your email to verify your account.',
@@ -110,7 +89,8 @@ export default function SignUpPage() {
     
     setLoading(true)
     try {
-      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin
+      const supabase = createClient()
+      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || (typeof window !== 'undefined' ? window.location.origin : '')
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {

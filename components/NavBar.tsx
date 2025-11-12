@@ -235,30 +235,27 @@ export function NavBar() {
               <Link href="/pricing" className="text-sm font-medium hover:text-primary">
                 Pricing
               </Link>
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.preventDefault()
-                  e.stopPropagation()
-                  console.log('Sign In button clicked - navigating with window.location')
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  alert('Sign In clicked!') // Debug alert
+                  console.log('Sign In button clicked - navigating')
                   window.location.href = '/signin'
                 }}
-                className="text-sm font-medium hover:text-primary bg-transparent border-none p-0 cursor-pointer"
+                className="text-sm font-medium"
               >
                 Sign In
-              </button>
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.preventDefault()
-                  e.stopPropagation()
-                  console.log('Sign Up button clicked - navigating with window.location')
+              </Button>
+              <Button
+                onClick={() => {
+                  alert('Sign Up clicked!') // Debug alert
+                  console.log('Sign Up button clicked - navigating')
                   window.location.href = '/signup'
                 }}
-                className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 h-10 cursor-pointer border-none"
+                className="h-10"
               >
                 Sign Up
-              </button>
+              </Button>
             </>
           )}
         </div>

@@ -18,13 +18,13 @@ export function NavBar() {
     const supabase = createClient()
     let mounted = true
     
-    // Set a timeout to ensure loading always resolves
+    // Set a shorter timeout to ensure loading always resolves
     const timeoutId = setTimeout(() => {
       if (mounted) {
-        console.warn('Auth check timeout - setting loading to false')
+        // Silently set loading to false without warning
         setLoading(false)
       }
-    }, 3000) // 3 second timeout
+    }, 2000) // 2 second timeout
     
     // Get initial user
     supabase.auth.getUser()
@@ -43,27 +43,35 @@ export function NavBar() {
         
         // Verify user profile exists (catches deleted users)
         if (user) {
-          const { error: profileError } = await supabase
-            .from('profiles')
-            .select('id')
-            .eq('id', user.id)
-            .single()
-          
-          if (profileError && profileError.code === 'PGRST116') {
-            console.warn('User profile not found - user was deleted, clearing session')
-            await supabase.auth.signOut()
-            setUser(null)
+          try {
+            const { error: profileError } = await supabase
+              .from('profiles')
+              .select('id')
+              .eq('id', user.id)
+              .single()
+            
+            if (profileError && profileError.code === 'PGRST116') {
+              // User profile not found - user was deleted, clear session silently
+              await supabase.auth.signOut()
+              setUser(null)
+              setLoading(false)
+              clearTimeout(timeoutId)
+              return
+            }
+            
+            setUser(user)
+            checkAdminStatus(user.id, supabase).finally(() => {
+              if (mounted) {
+                clearTimeout(timeoutId)
+              }
+            })
+          } catch (err) {
+            // If profile check fails, just set user and continue
+            setUser(user)
+            setIsAdmin(false)
             setLoading(false)
             clearTimeout(timeoutId)
-            return
           }
-          
-          setUser(user)
-          checkAdminStatus(user.id, supabase).finally(() => {
-            if (mounted) {
-              clearTimeout(timeoutId)
-            }
-          })
         } else {
           setUser(null)
           setLoading(false)
@@ -87,24 +95,31 @@ export function NavBar() {
       
       // Verify user profile exists (catches deleted users)
       if (currentUser) {
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .select('id')
-          .eq('id', currentUser.id)
-          .single()
-        
-        if (profileError && profileError.code === 'PGRST116') {
-          console.warn('User profile not found - user was deleted, clearing session')
-          await supabase.auth.signOut()
-          setUser(null)
+        try {
+          const { error: profileError } = await supabase
+            .from('profiles')
+            .select('id')
+            .eq('id', currentUser.id)
+            .single()
+          
+          if (profileError && profileError.code === 'PGRST116') {
+            // User profile not found - user was deleted, clear session silently
+            await supabase.auth.signOut()
+            setUser(null)
+            setIsAdmin(false)
+            setLoading(false)
+            clearTimeout(timeoutId)
+            return
+          }
+          
+          setUser(currentUser)
+          await checkAdminStatus(currentUser.id, supabase)
+        } catch (err) {
+          // If profile check fails, just set user and continue
+          setUser(currentUser)
           setIsAdmin(false)
           setLoading(false)
-          clearTimeout(timeoutId)
-          return
         }
-        
-        setUser(currentUser)
-        await checkAdminStatus(currentUser.id, supabase)
       } else {
         setUser(null)
         setIsAdmin(false)

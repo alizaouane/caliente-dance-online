@@ -235,34 +235,15 @@ export function NavBar() {
               <Link href="/pricing" className="text-sm font-medium hover:text-primary">
                 Pricing
               </Link>
-              <Button
-                variant="ghost"
-                onClick={(e) => {
-                  e.preventDefault()
-                  e.stopPropagation()
-                  console.log('Sign In button clicked - navigating')
-                  // Use setTimeout to ensure navigation happens
-                  setTimeout(() => {
-                    window.location.href = '/signin'
-                  }, 0)
-                }}
-                className="text-sm font-medium"
-              >
-                Sign In
+              <Button variant="ghost" asChild>
+                <Link href="/signin" className="text-sm font-medium">
+                  Sign In
+                </Link>
               </Button>
-              <Button
-                onClick={(e) => {
-                  e.preventDefault()
-                  e.stopPropagation()
-                  console.log('Sign Up button clicked - navigating')
-                  // Use setTimeout to ensure navigation happens
-                  setTimeout(() => {
-                    window.location.href = '/signup'
-                  }, 0)
-                }}
-                className="h-10"
-              >
-                Sign Up
+              <Button asChild>
+                <Link href="/signup" className="h-10">
+                  Sign Up
+                </Link>
               </Button>
             </>
           )}

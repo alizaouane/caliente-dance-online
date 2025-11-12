@@ -15,30 +15,36 @@ export interface Database {
       profiles: {
         Row: {
           id: string
+          email: string | null
           full_name: string | null
           avatar_url: string | null
           interests: string[]
           preferred_level: 'Beginner' | 'Intermediate' | 'Advanced' | null
           role: 'member' | 'admin'
           created_at: string
+          updated_at: string
         }
         Insert: {
           id: string
+          email?: string | null
           full_name?: string | null
           avatar_url?: string | null
           interests?: string[]
           preferred_level?: 'Beginner' | 'Intermediate' | 'Advanced' | null
           role?: 'member' | 'admin'
           created_at?: string
+          updated_at?: string
         }
         Update: {
           id?: string
+          email?: string | null
           full_name?: string | null
           avatar_url?: string | null
           interests?: string[]
           preferred_level?: 'Beginner' | 'Intermediate' | 'Advanced' | null
           role?: 'member' | 'admin'
           created_at?: string
+          updated_at?: string
         }
       }
       subscriptions: {
@@ -210,6 +216,43 @@ export interface Database {
           user_id?: string | null
           viewed_at?: string
         }
+      }
+      sessions_audit: {
+        Row: {
+          id: string
+          user_id: string | null
+          event: string
+          ip: string | null
+          user_agent: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id?: string | null
+          event: string
+          ip?: string | null
+          user_agent?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string | null
+          event?: string
+          ip?: string | null
+          user_agent?: string | null
+          created_at?: string
+        }
+      }
+    }
+    Functions: {
+      log_auth_event: {
+        Args: {
+          p_user_id: string
+          p_event: string
+          p_ip?: string | null
+          p_user_agent?: string | null
+        }
+        Returns: void
       }
     }
   }

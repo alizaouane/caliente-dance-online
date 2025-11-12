@@ -43,12 +43,46 @@ npm install
 ### 2. Set Up Supabase
 
 1. Create a new project at [supabase.com](https://supabase.com)
-2. Go to SQL Editor and run the contents of `supabase.sql`
-3. Go to Storage and create three buckets:
+2. Go to SQL Editor and run the contents of `supabase.sql` (main schema)
+3. Run the contents of `supabase/auth.sql` (authentication schema and RLS policies)
+4. Go to Storage and create three buckets:
    - `videos` (private)
    - `thumbnails` (public)
    - `previews` (private)
-4. Get your project URL and API keys from Settings > API
+5. Get your project URL and API keys from Settings > API
+
+#### Authentication Setup
+
+1. **Configure Authentication Providers**:
+   - Go to Authentication > Providers in Supabase Dashboard
+   - Enable Email provider (already enabled by default)
+   - For Google OAuth:
+     - Enable Google provider
+     - Add your Google OAuth credentials (Client ID and Secret)
+     - Add authorized redirect URLs: `http://localhost:3000/auth/callback` (dev) and your production URL
+
+2. **Email Configuration**:
+   - Go to Authentication > URL Configuration
+   - Add redirect URLs:
+     - `http://localhost:3000/auth/callback` (development)
+     - `https://your-production-domain.com/auth/callback` (production)
+   - Enable "Enforce email confirmations" for production
+   - Configure password reset email templates
+
+3. **JWT Settings**:
+   - Go to Authentication > Settings
+   - Set JWT expiry to 1 hour (default)
+   - Enable refresh token rotation
+   - Enable "Revoke refresh token on sign out"
+
+4. **Rate Limiting**:
+   - Enable rate limiting for sign-in/sign-up endpoints
+   - Recommended: 5 requests per minute per IP
+
+5. **Security Settings**:
+   - Disable "Allow users to change email without re-authentication"
+   - Require recent login for sensitive changes
+   - Enable MFA (optional but recommended for admins)
 
 ### 3. Set Up Stripe
 
@@ -71,15 +105,21 @@ Copy `.env.example` to `.env.local` and fill in your values:
 cp .env.example .env.local
 ```
 
-Required variables:
+**Required variables:**
 - `NEXT_PUBLIC_SUPABASE_URL`: Your Supabase project URL
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`: Your Supabase anon key
-- `SUPABASE_SERVICE_ROLE_KEY`: Your Supabase service role key (keep secret!)
+- `SUPABASE_SERVICE_ROLE_KEY`: Your Supabase service role key (keep secret! Never expose to client)
+- `NEXT_PUBLIC_SITE_URL`: Your site URL (http://localhost:3000 for local, https://your-domain.com for production)
 - `STRIPE_SECRET_KEY`: Your Stripe secret key
 - `STRIPE_WEBHOOK_SECRET`: Your Stripe webhook secret
-- `NEXT_PUBLIC_STRIPE_PRICE_MONTHLY`: Monthly plan price ID
-- `NEXT_PUBLIC_STRIPE_PRICE_YEARLY`: Yearly plan price ID
-- `NEXT_PUBLIC_SITE_URL`: Your site URL (http://localhost:3000 for local)
+- `STRIPE_PRICE_MONTHLY`: Monthly plan price ID
+- `STRIPE_PRICE_YEARLY`: Yearly plan price ID
+
+**Optional variables:**
+- `AUTH_REDIRECT_URLS`: Comma-separated list of allowed redirect URLs (for additional validation)
+- `GOOGLE_CLIENT_ID`: Google OAuth client ID (if using Google sign-in)
+- `GOOGLE_CLIENT_SECRET`: Google OAuth client secret (if using Google sign-in)
+- `SMTP_*`: SMTP configuration for custom email sending (optional, Supabase handles emails by default)
 
 ### 5. Seed Database
 
@@ -91,9 +131,19 @@ npm run seed
 
 ### 6. Create Admin User
 
-1. Sign up for an account through the app
-2. In Supabase Dashboard, go to Table Editor > `profiles`
-3. Find your user and set `role` to `'admin'`
+1. Sign up for an account through the app at `/signup`
+2. Confirm your email (if email confirmation is enabled)
+3. In Supabase Dashboard, go to Table Editor > `profiles`
+4. Find your user by email and set `role` to `'admin'`
+
+Alternatively, use SQL:
+```sql
+UPDATE public.profiles 
+SET role = 'admin' 
+WHERE id = (SELECT id FROM auth.users WHERE email = 'your-email@example.com');
+```
+
+After setting the role, sign out and sign back in to see the Admin link in the navigation.
 
 ### 7. Run Development Server
 
@@ -174,13 +224,65 @@ Edit `styles/theme.css` to change brand colors:
 - Subscriber list with Stripe sync
 - Analytics (basic)
 
+## Authentication
+
+The app uses Supabase Auth with the following features:
+
+### Supported Sign-In Methods
+
+1. **Email/Password**: Traditional email and password authentication
+2. **Magic Link**: Passwordless authentication via email link
+3. **OAuth (Google)**: Sign in with Google account
+
+### Authentication Flow
+
+1. **Sign Up**: Users create accounts via `/signup`
+   - Profile is automatically created via database trigger
+   - Email confirmation required (configurable in Supabase)
+
+2. **Sign In**: Users sign in via `/signin`
+   - Supports email/password, magic link, or OAuth
+   - Redirects to intended destination after authentication
+
+3. **Session Management**:
+   - Sessions stored in httpOnly cookies (secure in production)
+   - Automatic token refresh
+   - Sign out clears session and revokes refresh token
+
+### Route Protection
+
+- **Public Routes**: `/`, `/pricing`, `/signin`, `/signup`, `/reset-password`
+- **Member Routes**: `/videos`, `/account`, `/search` (require authentication)
+- **Admin Routes**: `/admin/**` (require authentication AND admin role)
+
+### Row Level Security (RLS)
+
+All database tables have RLS enabled with the following policies:
+
+- **Profiles**: Users can read/update only their own profile. Admins can read/update all profiles.
+- **Sessions Audit**: Only admins can read audit logs. Inserts via service role.
+- **Other tables**: Follow similar patterns based on user role and ownership.
+
+### Security Best Practices
+
+- ✅ Service role key only used in server-side API routes
+- ✅ No client-side exposure of sensitive keys
+- ✅ RLS policies enforce data access at database level
+- ✅ Middleware provides additional route protection
+- ✅ Secure cookies (httpOnly, sameSite=lax, secure in production)
+- ✅ Input validation with Zod on all auth endpoints
+- ✅ Auth events logged to `sessions_audit` table
+
 ## Security
 
 - Row Level Security (RLS) enabled on all tables
-- Admin routes protected by middleware
-- Member routes require authentication
+- Admin routes protected by middleware and layout guards
+- Member routes require authentication (middleware + layout)
 - Video access controlled by subscription status
-- Service role key only used in API routes
+- Service role key only used in API routes (never in client bundles)
+- Secure cookie configuration for production
+- Input validation on all auth endpoints
+- Auth event logging for audit trails
 
 ## Development
 

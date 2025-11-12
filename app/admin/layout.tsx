@@ -1,11 +1,15 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
+import { requireAdmin } from '@/lib/supabase/server'
 
 export default async function AdminLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  // This layout is protected by the (admin) route group layout
+  // But we also check here for extra safety
+  const { user } = await requireAdmin()
 
   return (
     <div className="min-h-screen bg-background">
@@ -34,6 +38,7 @@ export default async function AdminLayout({
             </nav>
           </div>
           <div className="flex items-center space-x-4">
+            <span className="text-sm text-muted-foreground">{user.email}</span>
             <Link href="/">
               <Button variant="outline" size="sm">Back to Site</Button>
             </Link>

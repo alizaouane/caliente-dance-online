@@ -237,20 +237,28 @@ export function NavBar() {
               </Link>
               <Button
                 variant="ghost"
-                onClick={() => {
-                  alert('Sign In clicked!') // Debug alert
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
                   console.log('Sign In button clicked - navigating')
-                  window.location.href = '/signin'
+                  // Use setTimeout to ensure navigation happens
+                  setTimeout(() => {
+                    window.location.href = '/signin'
+                  }, 0)
                 }}
                 className="text-sm font-medium"
               >
                 Sign In
               </Button>
               <Button
-                onClick={() => {
-                  alert('Sign Up clicked!') // Debug alert
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
                   console.log('Sign Up button clicked - navigating')
-                  window.location.href = '/signup'
+                  // Use setTimeout to ensure navigation happens
+                  setTimeout(() => {
+                    window.location.href = '/signup'
+                  }, 0)
                 }}
                 className="h-10"
               >

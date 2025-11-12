@@ -64,13 +64,13 @@ export async function POST(request: NextRequest) {
           .single()
 
         if (existing) {
-          await supabase
-            .from('subscriptions')
+          await (supabase
+            .from('subscriptions') as any)
             .update({
               status: subscription.status,
               price_id: subscription.items.data[0]?.price.id,
               current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
-            } as any)
+            })
             .eq('user_id', (existing as any).user_id)
         }
 

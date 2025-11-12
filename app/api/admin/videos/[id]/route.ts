@@ -10,8 +10,8 @@ export async function PUT(
     const body = await request.json()
 
     // Update video
-    const { error: videoError } = await supabase
-      .from('videos')
+    const { error: videoError } = await (supabase
+      .from('videos') as any)
       .update({
         title: body.title,
         slug: body.slug,
@@ -22,7 +22,7 @@ export async function PUT(
         video_path: body.video_path || null,
         preview_path: body.preview_path || null,
         thumbnail_path: body.thumbnail_path || null,
-      } as any)
+      })
       .eq('id', params.id)
 
     if (videoError) throw videoError

@@ -75,9 +75,8 @@ async function seed() {
 
   console.log('✅ Seed completed!')
   console.log('\n📌 Next steps:')
-  console.log('  1. Create an admin user by updating profiles.role = "admin" in Supabase')
-  console.log('  2. Set up Stripe products and price IDs')
-  console.log('  3. Configure Supabase Storage buckets (videos, thumbnails, previews)')
+  console.log('  1. Set up Stripe products and price IDs')
+  console.log('  2. Configure Supabase Storage buckets (videos, thumbnails, previews)')
 }
 
 seed().catch((error) => {

@@ -1,5 +1,4 @@
 import { createServerClient } from '@/lib/supabase/server'
-import { requireAuth } from '@/lib/rbac'
 import { VideoCard } from '@/components/VideoCard'
 import { FiltersBar } from '@/components/FiltersBar'
 import { EmptyState } from '@/components/EmptyState'
@@ -9,7 +8,6 @@ export default async function VideosPage({
 }: {
   searchParams: { q?: string; style?: string; level?: string; sort?: string }
 }) {
-  await requireAuth()
   const supabase = createServerClient()
 
   // Fetch styles and levels for filters

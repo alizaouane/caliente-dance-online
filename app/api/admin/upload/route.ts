@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { requireAdmin } from '@/lib/rbac'
 import { createServiceClient } from '@/lib/supabase/server'
 
 const MAX_FILE_SIZE = 500 * 1024 * 1024 // 500MB
@@ -8,7 +7,6 @@ const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp']
 
 export async function POST(request: NextRequest) {
   try {
-    await requireAdmin()
     const supabase = createServiceClient()
     
     const formData = await request.formData()

@@ -1,16 +1,11 @@
-import { requireAdmin } from '@/lib/rbac'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { createServerClient } from '@/lib/supabase/server'
 
 export default async function AdminLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  await requireAdmin()
-  const supabase = createServerClient()
-  const { data: { user } } = await supabase.auth.getUser()
 
   return (
     <div className="min-h-screen bg-background">
@@ -39,7 +34,6 @@ export default async function AdminLayout({
             </nav>
           </div>
           <div className="flex items-center space-x-4">
-            <span className="text-sm text-muted-foreground">{user?.email}</span>
             <Link href="/">
               <Button variant="outline" size="sm">Back to Site</Button>
             </Link>

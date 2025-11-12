@@ -1,5 +1,4 @@
 import { createServerClient } from '@/lib/supabase/server'
-import { requireAuth } from '@/lib/rbac'
 import { VideoCard } from '@/components/VideoCard'
 import { EmptyState } from '@/components/EmptyState'
 import { Input } from '@/components/ui/input'
@@ -11,7 +10,6 @@ export default async function SearchPage({
 }: {
   searchParams: { q?: string }
 }) {
-  await requireAuth()
   const supabase = createServerClient()
 
   let videos: any[] = []

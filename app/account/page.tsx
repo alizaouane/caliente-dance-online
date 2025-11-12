@@ -1,6 +1,3 @@
-import { requireAuth } from '@/lib/rbac'
-import { getCurrentProfile, hasActiveSubscription, isAdmin } from '@/lib/auth'
-import { createServerClient } from '@/lib/supabase/server'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { BillingPortalButton } from '@/components/BillingPortalButton'
@@ -8,17 +5,7 @@ import { Badge } from '@/components/ui/badge'
 import Link from 'next/link'
 
 export default async function AccountPage() {
-  const user = await requireAuth()
-  const profile = await getCurrentProfile()
-  const hasSub = await hasActiveSubscription(user.id)
-  const admin = await isAdmin(user.id)
-  const supabase = createServerClient()
-
-  const { data: subscription } = await supabase
-    .from('subscriptions')
-    .select('status, current_period_end')
-    .eq('user_id', user.id)
-    .single()
+  // Authentication removed - page is now public
 
   return (
     <div className="container py-12">
@@ -32,18 +19,7 @@ export default async function AccountPage() {
               <CardDescription>Your account information</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div>
-                <p className="text-sm text-muted-foreground">Email</p>
-                <p className="font-medium">{user.email}</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Full Name</p>
-                <p className="font-medium">{profile?.full_name || 'Not set'}</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Preferred Level</p>
-                <p className="font-medium">{profile?.preferred_level || 'Not set'}</p>
-              </div>
+              <p className="text-muted-foreground">Authentication has been removed. This page is no longer functional.</p>
             </CardContent>
           </Card>
 
@@ -53,51 +29,16 @@ export default async function AccountPage() {
               <CardDescription>Manage your subscription</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {hasSub ? (
-                <>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Status</p>
-                    <Badge variant="default" className="mt-1">
-                      {subscription?.status || 'Active'}
-                    </Badge>
-                  </div>
-                  {subscription?.current_period_end && (
-                    <div>
-                      <p className="text-sm text-muted-foreground">Next Billing Date</p>
-                      <p className="font-medium">
-                        {new Date(subscription.current_period_end).toLocaleDateString()}
-                      </p>
-                    </div>
-                  )}
-                  <BillingPortalButton />
-                </>
-              ) : (
-                <>
-                  <p className="text-muted-foreground mb-4">
-                    You don&apos;t have an active subscription. Subscribe to access all videos.
-                  </p>
-                  <Button asChild>
-                    <a href="/pricing">View Pricing</a>
-                  </Button>
-                </>
-              )}
+              <p className="text-muted-foreground mb-4">
+                Authentication has been removed. This page is no longer functional.
+              </p>
+              <Button asChild>
+                <Link href="/pricing">View Pricing</Link>
+              </Button>
             </CardContent>
           </Card>
         </div>
 
-        {admin && (
-          <Card className="mt-6">
-            <CardHeader>
-              <CardTitle>Admin</CardTitle>
-              <CardDescription>Access the admin dashboard</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button asChild>
-                <Link href="/admin">Go to Admin Dashboard</Link>
-              </Button>
-            </CardContent>
-          </Card>
-        )}
       </div>
     </div>
   )

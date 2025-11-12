@@ -1,4 +1,3 @@
-import { requireAdmin } from '@/lib/rbac'
 import { createServerClient } from '@/lib/supabase/server'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { KPI } from '@/components/KPI'
@@ -6,7 +5,6 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 
 export default async function AdminDashboard() {
-  await requireAdmin()
   const supabase = createServerClient()
 
   // Get total subscribers

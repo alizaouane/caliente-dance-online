@@ -1,10 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { requireAdmin } from '@/lib/rbac'
 import { createServiceClient } from '@/lib/supabase/server'
 
 export async function POST(request: NextRequest) {
   try {
-    await requireAdmin()
     const supabase = createServiceClient()
     const body = await request.json()
 

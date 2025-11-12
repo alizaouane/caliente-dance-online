@@ -1,7 +1,5 @@
 import { notFound } from 'next/navigation'
 import { createServerClient } from '@/lib/supabase/server'
-import { requireAuth } from '@/lib/rbac'
-import { hasActiveSubscription } from '@/lib/auth'
 import { VideoPlayer } from '@/components/VideoPlayer'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
@@ -16,8 +14,6 @@ export default async function VideoPage({
 }: {
   params: { slug: string }
 }) {
-  const user = await requireAuth()
-  const hasSub = await hasActiveSubscription(user.id)
   const supabase = createServerClient()
 
   // Fetch video with relations
@@ -36,12 +32,11 @@ export default async function VideoPage({
     notFound()
   }
 
-  // Record view
+  // Record view (without user_id since auth is removed)
   await supabase
     .from('video_views')
     .insert({
       video_id: video.id,
-      user_id: user.id,
     })
 
   // Get related videos (same style or level)
@@ -72,19 +67,18 @@ export default async function VideoPage({
     levels: v.video_levels?.map((vl: any) => vl.levels) || [],
   })) || []
 
-  // Get video URL
+  // Get video URL (show preview for all users since auth is removed)
   let videoUrl: string | null = null
   let previewUrl: string | null = null
 
   try {
-    if (hasSub && video.video_path) {
-      videoUrl = await getSignedUrl('videos', video.video_path, 3600)
-    } else if (video.preview_path) {
+    if (video.preview_path) {
       previewUrl = await getSignedUrl('previews', video.preview_path, 3600)
+    } else if (video.video_path) {
+      videoUrl = await getSignedUrl('videos', video.video_path, 3600)
     }
   } catch (error) {
     console.error('Error getting video URLs:', error)
-    // Continue without video URLs - will show subscribe CTA
   }
 
   const thumbnailUrl = video.thumbnail_path
@@ -102,7 +96,7 @@ export default async function VideoPage({
             <VideoPlayer
               videoUrl={videoUrl}
               previewUrl={previewUrl}
-              hasSubscription={hasSub}
+              hasSubscription={true}
               thumbnailUrl={thumbnailUrl}
             />
 

@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { requireAdmin } from '@/lib/rbac'
 import { createServiceClient } from '@/lib/supabase/server'
 
 export async function PUT(
@@ -7,7 +6,6 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
-    await requireAdmin()
     const supabase = createServiceClient()
     const body = await request.json()
 

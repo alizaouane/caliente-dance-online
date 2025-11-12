@@ -8,10 +8,7 @@ export async function getCurrentUser() {
     
     if (error) {
       console.error('Error getting user:', error)
-      // If user not found or session invalid, clear the session
-      if (error.message?.includes('JWT') || error.message?.includes('session')) {
-        await supabase.auth.signOut()
-      }
+      // Return null instead of trying to sign out (server components can't mutate cookies)
       return null
     }
     
@@ -26,8 +23,8 @@ export async function getCurrentUser() {
       
       // If profile doesn't exist, user was likely deleted
       if (profileError && profileError.code === 'PGRST116') {
-        console.warn('User profile not found - user may have been deleted, clearing session')
-        await supabase.auth.signOut()
+        console.warn('User profile not found - user may have been deleted')
+        // Return null instead of trying to sign out (server components can't mutate cookies)
         return null
       }
     }

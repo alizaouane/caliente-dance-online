@@ -4,26 +4,16 @@ import { createServerClient } from './supabase/server'
 
 export async function requireAuth() {
   try {
+    // Use getCurrentUser() which handles all validation without mutating cookies
+    const user = await getCurrentUser()
+    
+    if (!user) {
+      console.warn('No valid user found - redirecting to signin')
+      redirect('/signin')
+    }
+    
+    // Verify user profile exists (catches deleted users)
     const supabase = createServerClient()
-    
-    // First check if we have a valid session
-    const { data: { session }, error: sessionError } = await supabase.auth.getSession()
-    
-    if (sessionError || !session) {
-      console.warn('No valid session found')
-      redirect('/signin')
-    }
-    
-    // Verify the user actually exists
-    const { data: { user }, error: userError } = await supabase.auth.getUser()
-    
-    if (userError || !user) {
-      console.warn('User not found or session invalid, clearing session')
-      await supabase.auth.signOut()
-      redirect('/signin')
-    }
-    
-    // Double-check: verify user profile exists (catches deleted users)
     const { error: profileError } = await supabase
       .from('profiles')
       .select('id')
@@ -31,8 +21,8 @@ export async function requireAuth() {
       .single()
     
     if (profileError && profileError.code === 'PGRST116') {
-      console.warn('User profile not found - user was deleted, clearing session')
-      await supabase.auth.signOut()
+      console.warn('User profile not found - user was deleted')
+      // Return null to trigger redirect (don't mutate cookies in server component)
       redirect('/signin')
     }
     

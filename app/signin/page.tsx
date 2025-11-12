@@ -54,10 +54,17 @@ export default function SignInPage() {
       const supabase = createClient()
       console.log('Supabase client created')
       
-      const { data, error } = await supabase.auth.signInWithPassword({
+      // Add timeout to prevent hanging
+      const signInPromise = supabase.auth.signInWithPassword({
         email: email.trim(),
         password,
       })
+      
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Sign in request timed out. Please try again.')), 10000)
+      )
+      
+      const { data, error } = await Promise.race([signInPromise, timeoutPromise]) as any
 
       console.log('Sign in response:', { data: !!data, error: error?.message })
 
@@ -77,6 +84,9 @@ export default function SignInPage() {
         
         // Force a hard navigation to ensure session is loaded
         window.location.href = '/videos'
+      } else if (data?.user && !data?.session) {
+        // User exists but no session - might need email confirmation
+        throw new Error('Please check your email and confirm your account before signing in.')
       } else {
         throw new Error('No user or session returned')
       }

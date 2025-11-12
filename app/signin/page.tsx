@@ -69,7 +69,24 @@ export default function SignInPage() {
       console.log('Sign in response:', { data: !!data, error: error?.message })
 
       if (error) {
-        throw error
+        // Provide specific error messages based on error type
+        let errorMessage = 'Failed to sign in. Please check your credentials.'
+        
+        if (error.message?.includes('Invalid login credentials') || 
+            error.message?.includes('Invalid credentials') ||
+            error.status === 400) {
+          errorMessage = 'Invalid email or password. Please check your credentials and try again.'
+        } else if (error.message?.includes('Email not confirmed') ||
+                   error.message?.includes('email_not_confirmed')) {
+          errorMessage = 'Please check your email and confirm your account before signing in.'
+        } else if (error.message?.includes('User not found') ||
+                   error.message?.includes('user_not_found')) {
+          errorMessage = 'No account found with this email address. Please sign up first.'
+        } else if (error.message) {
+          errorMessage = error.message
+        }
+        
+        throw new Error(errorMessage)
       }
 
       if (data?.user && data?.session) {
@@ -88,7 +105,7 @@ export default function SignInPage() {
         // User exists but no session - might need email confirmation
         throw new Error('Please check your email and confirm your account before signing in.')
       } else {
-        throw new Error('No user or session returned')
+        throw new Error('No account found with this email address. Please sign up first.')
       }
     } catch (error: any) {
       console.error('Sign in error:', error)

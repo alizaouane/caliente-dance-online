@@ -60,16 +60,25 @@ export default function SignUpPage() {
       }
 
       if (data?.user) {
-        console.log('Sign up successful')
+        console.log('Sign up successful, user:', data.user.id)
         toast({
           title: 'Success',
-          description: 'Account created! Please check your email to verify your account.',
+          description: data.user.email_confirmed_at 
+            ? 'Account created successfully! You can now sign in.'
+            : 'Account created! Please check your email to verify your account.',
         })
         
-        // Redirect to signin after a short delay
-        setTimeout(() => {
-          window.location.href = '/signin'
-        }, 2000)
+        // If email is already confirmed, redirect to signin immediately
+        // Otherwise, wait a bit then redirect
+        if (data.user.email_confirmed_at) {
+          setTimeout(() => {
+            window.location.href = '/signin'
+          }, 1500)
+        } else {
+          setTimeout(() => {
+            window.location.href = '/signin'
+          }, 3000)
+        }
       } else {
         throw new Error('No user returned from signup')
       }

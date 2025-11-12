@@ -39,10 +39,8 @@ export async function middleware(request: NextRequest) {
       }
     }
 
-    // Auth routes - redirect to home if already logged in
-    if ((pathname.startsWith('/signin') || pathname.startsWith('/signup')) && session) {
-      return NextResponse.redirect(new URL('/', request.url))
-    }
+    // Auth routes - allow access even if session exists (let pages handle redirect)
+    // This prevents middleware from blocking access to signin/signup
 
     return res
   } catch (error) {

@@ -18,33 +18,33 @@ export async function POST(request: NextRequest) {
         video_path: body.video_path || null,
         preview_path: body.preview_path || null,
         thumbnail_path: body.thumbnail_path || null,
-      })
+      } as any)
       .select()
       .single()
 
     if (error) throw error
 
     // Update styles
-    if (body.selectedStyles?.length > 0) {
+    if (body.selectedStyles?.length > 0 && video) {
       await supabase
         .from('video_styles')
         .insert(
           body.selectedStyles.map((styleId: string) => ({
-            video_id: video.id,
+            video_id: (video as any).id,
             style_id: styleId,
-          }))
+          })) as any
         )
     }
 
     // Update levels
-    if (body.selectedLevels?.length > 0) {
+    if (body.selectedLevels?.length > 0 && video) {
       await supabase
         .from('video_levels')
         .insert(
           body.selectedLevels.map((levelId: string) => ({
-            video_id: video.id,
+            video_id: (video as any).id,
             level_id: levelId,
-          }))
+          })) as any
         )
     }
 

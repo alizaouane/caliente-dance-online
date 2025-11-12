@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
       .from('levels')
       .insert({
         name: body.name,
-      })
+      } as any)
       .select()
       .single()
 

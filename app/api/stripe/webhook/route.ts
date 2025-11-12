@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
             status: subscription.status,
             price_id: subscription.items.data[0]?.price.id,
             current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
-          })
+          } as any)
 
         break
       }
@@ -70,8 +70,8 @@ export async function POST(request: NextRequest) {
               status: subscription.status,
               price_id: subscription.items.data[0]?.price.id,
               current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
-            })
-            .eq('user_id', existing.user_id)
+            } as any)
+            .eq('user_id', (existing as any).user_id)
         }
 
         break

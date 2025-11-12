@@ -1,7 +1,7 @@
 import { createServerComponentClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
-import { createClient } from '@supabase/supabase-js'
+import { createClient, SupabaseClient } from '@supabase/supabase-js'
 import { Database } from '@/types/database'
 import { SessionUser } from '@/types/auth'
 
@@ -91,7 +91,7 @@ export async function requireAdmin(): Promise<{
  * - autoRefreshToken: false (no token refresh needed)
  * - persistSession: false (no session storage)
  */
-export const createServiceClient = () => {
+export const createServiceClient = (): SupabaseClient<Database> => {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
@@ -99,8 +99,6 @@ export const createServiceClient = () => {
     throw new Error('Missing Supabase service role environment variables')
   }
 
-  // Use dynamic require to avoid bundling in client
-  // @ts-ignore - createClient is available at runtime
   return createClient<Database>(supabaseUrl, supabaseServiceKey, {
     auth: {
       autoRefreshToken: false,

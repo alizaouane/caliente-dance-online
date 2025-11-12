@@ -22,7 +22,7 @@ export async function PUT(
         video_path: body.video_path || null,
         preview_path: body.preview_path || null,
         thumbnail_path: body.thumbnail_path || null,
-      })
+      } as any)
       .eq('id', params.id)
 
     if (videoError) throw videoError
@@ -40,7 +40,7 @@ export async function PUT(
           body.selectedStyles.map((styleId: string) => ({
             video_id: params.id,
             style_id: styleId,
-          }))
+          })) as any
         )
     }
 
@@ -57,7 +57,7 @@ export async function PUT(
           body.selectedLevels.map((levelId: string) => ({
             video_id: params.id,
             level_id: levelId,
-          }))
+          })) as any
         )
     }
 

@@ -11,7 +11,7 @@ export async function POST(request: NextRequest) {
       .insert({
         name: body.name,
         slug: body.slug,
-      })
+      } as any)
       .select()
       .single()
 
